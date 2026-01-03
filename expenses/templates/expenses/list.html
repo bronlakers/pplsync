@@ -1,0 +1,49 @@
+{% extends "base.html" %}
+{% block title %}Expenses | BizTrack{% endblock %}
+{% block content %}
+<div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-3">
+  <div>
+    <h2 class="mb-1">Expenses</h2>
+    <div class="muted">Finance view — approve and mark paid.</div>
+  </div>
+  <a class="btn btn-primary" href="{% url 'expense_create' %}"><i class="bi bi-plus-lg me-1"></i>New claim</a>
+</div>
+
+<div class="card shadow-soft">
+  <div class="card-header bg-white">Latest 300</div>
+  <div class="table-responsive">
+    <table class="table table-sm mb-0">
+      <thead><tr><th>Date</th><th>Vendor</th><th>Category</th><th>Amount</th><th>Status</th><th>Claimed by</th><th></th></tr></thead>
+      <tbody>
+      {% for e in expenses %}
+        <tr>
+          <td>{{ e.date }}</td>
+          <td class="fw-semibold">{{ e.vendor }}</td>
+          <td>{{ e.category|default:"—" }}</td>
+          <td>{{ e.amount }}</td>
+          <td>
+            {% if e.status == "paid" %}<span class="badge bg-success">Paid</span>
+            {% elif e.status == "approved" %}<span class="badge bg-info text-dark">Approved</span>
+            {% elif e.status == "submitted" %}<span class="badge bg-warning text-dark">Submitted</span>
+            {% elif e.status == "rejected" %}<span class="badge bg-danger">Rejected</span>
+            {% else %}<span class="badge bg-secondary">Draft</span>
+            {% endif %}
+          </td>
+          <td>{{ e.created_by.username|default:"—" }}</td>
+          <td class="text-end">
+            {% if e.status == "submitted" %}
+              <a class="btn btn-sm btn-outline-success" href="{% url 'expense_approve' e.id %}"><i class="bi bi-check2 me-1"></i>Approve</a>
+            {% endif %}
+            {% if e.status == "approved" %}
+              <a class="btn btn-sm btn-outline-success" href="{% url 'expense_paid' e.id %}"><i class="bi bi-cash me-1"></i>Mark paid</a>
+            {% endif %}
+          </td>
+        </tr>
+      {% empty %}
+        <tr><td colspan="7" class="text-muted p-3">No expenses yet.</td></tr>
+      {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}

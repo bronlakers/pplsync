@@ -1,0 +1,81 @@
+{% extends "base.html" %}
+{% block title %}Attendance | BizTrack{% endblock %}
+{% block content %}
+<div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-3">
+  <div>
+    <h2 class="mb-1">Attendance</h2>
+    <div class="muted">{{ month_name }} {{ year }} • HR view</div>
+  </div>
+  <div class="d-flex gap-2">
+    <a class="btn btn-outline-secondary" href="{% url 'attendance_upload' %}"><i class="bi bi-upload me-1"></i>Upload</a>
+    <a class="btn btn-outline-primary" href="?year={{ prev_year }}&month={{ prev_month }}"><i class="bi bi-arrow-left me-1"></i>Prev</a>
+    <a class="btn btn-outline-primary" href="?year={{ next_year }}&month={{ next_month }}">Next<i class="bi bi-arrow-right ms-1"></i></a>
+  </div>
+</div>
+
+<div class="row g-3">
+  <div class="col-lg-7">
+    <div class="card shadow-soft">
+      <div class="card-header bg-white">All records (up to 500)</div>
+      <div class="table-responsive">
+        <table class="table table-sm mb-0">
+          <thead>
+            <tr>
+              <th>Date</th><th>Employee</th><th>Status</th><th>In</th><th>Out</th><th>Late</th><th>Early</th>
+            </tr>
+          </thead>
+          <tbody>
+          {% for r in records %}
+            <tr>
+              <td>{{ r.date }}</td>
+              <td class="fw-semibold">{{ r.employee.full_name }}</td>
+              <td>{{ r.get_status_display }}</td>
+              <td>{{ r.check_in|default:"—" }}</td>
+              <td>{{ r.check_out|default:"—" }}</td>
+              <td>{% if r.late_minutes > 0 %}<span class="badge bg-warning text-dark">{{ r.late_minutes }}m</span>{% else %}—{% endif %}</td>
+              <td>{% if r.early_minutes > 0 %}<span class="badge bg-warning text-dark">{{ r.early_minutes }}m</span>{% else %}—{% endif %}</td>
+            </tr>
+          {% empty %}
+            <tr><td colspan="7" class="text-muted p-3">No records for this month.</td></tr>
+          {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <div class="col-lg-5">
+    <div class="card shadow-soft">
+      <div class="card-header bg-white">Exceptions (late/early/WFH/leave)</div>
+      <div class="table-responsive">
+        <table class="table table-sm mb-0">
+          <thead>
+            <tr><th>Date</th><th>Employee</th><th>Issue</th></tr>
+          </thead>
+          <tbody>
+          {% for r in exceptions %}
+            <tr>
+              <td>{{ r.date }}</td>
+              <td class="fw-semibold">{{ r.employee.full_name }}</td>
+              <td>
+                {% if r.status != "present" %}
+                  <span class="badge bg-info text-dark">{{ r.get_status_display }}</span>
+                {% endif %}
+                {% if r.late_minutes > 0 %}
+                  <span class="badge bg-warning text-dark">Late {{ r.late_minutes }}m</span>
+                {% endif %}
+                {% if r.early_minutes > 0 %}
+                  <span class="badge bg-warning text-dark">Early {{ r.early_minutes }}m</span>
+                {% endif %}
+              </td>
+            </tr>
+          {% empty %}
+            <tr><td colspan="3" class="text-muted p-3">No exceptions 🎉</td></tr>
+          {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

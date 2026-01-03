@@ -1,0 +1,157 @@
+{% extends "base.html" %}
+{% block title %}Dashboard | BizTrack{% endblock %}
+{% block content %}
+<div class="d-flex flex-wrap align-items-center justify-content-between gap-2 mb-3">
+  <div>
+    <h2 class="mb-1">Dashboard</h2>
+    <div class="muted">Quick overview + analytics (this month)</div>
+  </div>
+
+  <div class="d-flex gap-2">
+    {% if employee_linked %}
+      <a class="btn btn-outline-primary" href="{% url 'attendance_my_history' %}">
+        <i class="bi bi-calendar2-week me-1"></i>My attendance
+      </a>
+      <a class="btn btn-primary" href="{% url 'expense_my_list' %}">
+        <i class="bi bi-receipt me-1"></i>My expense claims
+      </a>
+    {% else %}
+      <a class="btn btn-outline-secondary" href="/admin/core/employee/">
+        <i class="bi bi-person-check me-1"></i>Link your user to Employee in Admin
+      </a>
+    {% endif %}
+  </div>
+</div>
+
+<div class="row g-3 mb-3">
+  <div class="col-md-3">
+    <div class="card shadow-soft">
+      <div class="card-body">
+        <div class="muted"><i class="bi bi-calendar-check me-1"></i>Attendance records (month)</div>
+        <div class="fs-2 kpi">{{ attendance_count }}</div>
+        <div class="small muted">Late: {{ late_count }} • Early: {{ early_count }}</div>
+      </div>
+    </div>
+  </div>
+  <div class="col-md-3">
+    <div class="card shadow-soft">
+      <div class="card-body">
+        <div class="muted"><i class="bi bi-cash-coin me-1"></i>Open vouchers</div>
+        <div class="fs-2 kpi">{{ open_vouchers }}</div>
+        <div class="small muted">Needs bills or review</div>
+      </div>
+    </div>
+  </div>
+  <div class="col-md-3">
+    <div class="card shadow-soft">
+      <div class="card-body">
+        <div class="muted"><i class="bi bi-receipt me-1"></i>Pending expenses</div>
+        <div class="fs-2 kpi">{{ pending_expenses }}</div>
+        <div class="small muted">Submitted, awaiting approval</div>
+      </div>
+    </div>
+  </div>
+  <div class="col-md-3">
+    <div class="card shadow-soft">
+      <div class="card-body">
+        <div class="muted"><i class="bi bi-laptop me-1"></i>Assets assigned</div>
+        <div class="fs-2 kpi">{{ assets_assigned }}</div>
+        <div class="small muted">Currently checked out</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="row g-3">
+  <div class="col-lg-4">
+    <div class="card shadow-soft">
+      <div class="card-header bg-white">
+        <div class="fw-semibold">Attendance by status</div>
+        <div class="small muted">Present / WFH / Leave etc.</div>
+      </div>
+      <div class="card-body">
+        <canvas id="attStatusChart" height="180"></canvas>
+      </div>
+    </div>
+  </div>
+
+  <div class="col-lg-4">
+    <div class="card shadow-soft">
+      <div class="card-header bg-white">
+        <div class="fw-semibold">Expenses by status</div>
+        <div class="small muted">Submitted / Approved / Paid</div>
+      </div>
+      <div class="card-body">
+        <canvas id="expenseStatusChart" height="180"></canvas>
+      </div>
+    </div>
+  </div>
+
+  <div class="col-lg-4">
+    <div class="card shadow-soft">
+      <div class="card-header bg-white">
+        <div class="fw-semibold">Assets by status</div>
+        <div class="small muted">Assigned vs Available</div>
+      </div>
+      <div class="card-body">
+        <canvas id="assetStatusChart" height="180"></canvas>
+      </div>
+    </div>
+  </div>
+
+  <div class="col-12">
+    <div class="card shadow-soft">
+      <div class="card-header bg-white d-flex justify-content-between align-items-center">
+        <div>
+          <div class="fw-semibold">Petty cash variance (recent)</div>
+          <div class="small muted">Variance = counted cash - expected cash</div>
+        </div>
+        <a class="btn btn-sm btn-outline-secondary" href="{% url 'pettycash_reconcile' %}">
+          Open reconciliation
+        </a>
+      </div>
+      <div class="card-body">
+        <canvas id="varianceChart" height="90"></canvas>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+<script>
+  const attLabels = {{ att_status_labels|safe }};
+  const attValues = {{ att_status_values|safe }};
+  new Chart(document.getElementById("attStatusChart"), {
+    type: "doughnut",
+    data: { labels: attLabels, datasets: [{ data: attValues }] },
+    options: { plugins: { legend: { position: "bottom" } } }
+  });
+
+  const expLabels = {{ exp_status_labels|safe }};
+  const expValues = {{ exp_status_values|safe }};
+  new Chart(document.getElementById("expenseStatusChart"), {
+    type: "doughnut",
+    data: { labels: expLabels, datasets: [{ data: expValues }] },
+    options: { plugins: { legend: { position: "bottom" } } }
+  });
+
+  const assetLabels = {{ asset_status_labels|safe }};
+  const assetValues = {{ asset_status_values|safe }};
+  new Chart(document.getElementById("assetStatusChart"), {
+    type: "doughnut",
+    data: { labels: assetLabels, datasets: [{ data: assetValues }] },
+    options: { plugins: { legend: { position: "bottom" } } }
+  });
+
+  const recLabels = {{ rec_labels|safe }};
+  const recVariance = {{ rec_variance|safe }};
+  new Chart(document.getElementById("varianceChart"), {
+    type: "bar",
+    data: { labels: recLabels, datasets: [{ label: "Variance", data: recVariance }] },
+    options: {
+      plugins: { legend: { display: false } },
+      scales: { y: { beginAtZero: true } }
+    }
+  });
+</script>
+{% endblock %}

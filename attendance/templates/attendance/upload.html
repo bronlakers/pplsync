@@ -1,0 +1,25 @@
+{% extends "base.html" %}
+{% block title %}Attendance Upload | BizTrack{% endblock %}
+{% block content %}
+<div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-3">
+  <div>
+    <h2 class="mb-1">Attendance Upload</h2>
+    <div class="muted">Upload Excel logs and auto-calculate late/early.</div>
+  </div>
+  <a class="btn btn-outline-secondary" href="{% url 'attendance_month_view' %}"><i class="bi bi-calendar2-week me-1"></i>Month view</a>
+</div>
+
+<div class="card shadow-soft">
+  <div class="card-body">
+    <div class="alert alert-info">
+      <div class="fw-semibold">Expected columns</div>
+      <code>employee_code, date (YYYY-MM-DD), check_in (HH:MM), check_out (HH:MM), status</code>
+    </div>
+    <form method="post" enctype="multipart/form-data">
+      {% csrf_token %}
+      {{ form.as_p }}
+      <button class="btn btn-primary" type="submit"><i class="bi bi-upload me-1"></i>Upload & Import</button>
+    </form>
+  </div>
+</div>
+{% endblock %}
